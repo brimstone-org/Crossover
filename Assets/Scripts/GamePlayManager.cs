@@ -7,12 +7,8 @@ using UnityEngine.Networking;
 
 public class GamePlayManager : MonoBehaviour
 {
-
-    [SerializeField]
-    private string apiUrl; //the url for the API
-
     [System.Serializable]
-    class MathStandard
+    public class MathStandard
     {
         public string id = string.Empty;
         public string subject = string.Empty;
@@ -23,9 +19,28 @@ public class GamePlayManager : MonoBehaviour
         public string cluster = string.Empty;
         public string standardid = string.Empty;
         public string standarddescription = string.Empty;
+
+        public MathStandard(string id, string subject, string grade, int mastery, string domainid, string domain, string cluster, string standardid, string standarddescription)
+        {
+            this.id = id;
+            this.subject = subject;
+            this.grade = grade;
+            this.mastery = mastery;
+            this.domainid = domainid;
+            this.domain = domain;
+            this.cluster = cluster;
+            this.standardid = standardid;
+            this.standarddescription = standarddescription;
+        }
     }
 
+    [SerializeField]
+    private string apiUrl; //the url for the API
+
     private List<MathStandard> mathStandards = new List<MathStandard>();
+    public Stack sixthGradeStack;
+    public Stack seventhGradeStack;
+    public Stack eighthGradeStack;
 
     private void Start()
     {
@@ -45,9 +60,16 @@ public class GamePlayManager : MonoBehaviour
         {
             string serviceData = "{\"Items\":" + response + "}";
             mathStandards = Utilities.JsonHelper.FromJson<MathStandard>(serviceData).ToList();
-            
+            List<MathStandard> sixthGradeData = mathStandards.Where(x => x.grade.Equals("6th Grade")).ToList();
+            sixthGradeStack.SetupStack(sixthGradeData, "6th Grade");
+            List<MathStandard> seventhGradeData = mathStandards.Where(x => x.grade.Equals("7th Grade")).ToList();
+            seventhGradeStack.SetupStack(seventhGradeData, "7th Grade");
+            List<MathStandard> eighthGradeData = mathStandards.Where(x => x.grade.Equals("8th Grade")).ToList();
+            eighthGradeStack.SetupStack(eighthGradeData, "8th Grade");
         }
-        )); 
+        ));
+        //move camera in position at the beginning
+        Camera.main.GetComponent<CameraController>().MoveToStack(sixthGradeStack.transform);
     }
 
     private IEnumerator CallDatabase(UnityWebRequest www, Action<long, string> onComplete = null)
@@ -65,5 +87,19 @@ public class GamePlayManager : MonoBehaviour
     }
     #endregion
 
+
+    #region gameplay
+
+    /// <summary>
+    /// called when pressing the "Test my stack button"
+    /// </summary>
+    public void TestMyStack()
+    {
+        sixthGradeStack.TestMyStack();
+        seventhGradeStack.TestMyStack();
+        eighthGradeStack.TestMyStack();
+    }
+
+    #endregion
 
 }
